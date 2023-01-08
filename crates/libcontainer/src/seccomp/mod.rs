@@ -200,6 +200,7 @@ pub fn initialize_seccomp(seccomp: &LinuxSeccomp) -> Result<Option<io::RawFd>> {
     // Ref: https://man7.org/linux/man-pages/man2/seccomp.2.html
     ctx.load().context("failed to load seccomp context")?;
 
+/*
     let fd = if is_notify(seccomp) {
         Some(
             ctx.get_notify_fd()
@@ -210,6 +211,9 @@ pub fn initialize_seccomp(seccomp: &LinuxSeccomp) -> Result<Option<io::RawFd>> {
     };
 
     Ok(fd)
+    */
+
+    Ok(None)
 }
 
 pub fn is_notify(seccomp: &LinuxSeccomp) -> bool {
