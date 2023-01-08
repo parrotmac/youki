@@ -374,7 +374,7 @@ impl Syscall for LinuxSyscall {
             rlim_cur: rlimit.soft(),
             rlim_max: rlimit.hard(),
         };
-        let res = unsafe { libc::setrlimit(rlimit.typ(), rlim) };
+        let res = unsafe { libc::setrlimit(rlimit.typ() as i32, rlim) };
         if let Err(e) = Errno::result(res).map(drop) {
             bail!("Failed to set {:?}. {:?}", rlimit.typ(), e)
         }
