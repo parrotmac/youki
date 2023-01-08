@@ -368,7 +368,21 @@ impl Syscall for LinuxSyscall {
         }
     }
 
+    #[cfg(target_env = "musl")]
+    fn set_rlimit(&self, rlimit: &LinuxRlimit) -> Result<()> {
+        let rlim = &libc::rlimit {
+            rlim_cur: rlimit.soft(),
+            rlim_max: rlimit.hard(),
+        };
+        let res = unsafe { libc::setrlimit(rlimit.typ(), rlim) };
+        if let Err(e) = Errno::result(res).map(drop) {
+            bail!("Failed to set {:?}. {:?}", rlimit.typ(), e)
+        }
+        Ok(())
+    }
+
     /// Sets resource limit for process
+    #[cfg(target_env = "gnu")]
     fn set_rlimit(&self, rlimit: &LinuxRlimit) -> Result<()> {
         let rlim = &libc::rlimit {
             rlim_cur: rlimit.soft(),
