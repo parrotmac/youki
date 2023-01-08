@@ -8,6 +8,7 @@ pub mod notify_socket;
 pub mod process;
 pub mod rootfs;
 pub mod rootless;
+#[cfg(feature = "seccomp")]
 pub mod seccomp;
 pub mod signal;
 pub mod syscall;

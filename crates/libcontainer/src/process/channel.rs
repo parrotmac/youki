@@ -8,8 +8,10 @@ use serde::{Deserialize, Serialize};
 use std::{
     io::{IoSlice, IoSliceMut},
     marker::PhantomData,
-    os::unix::prelude::{AsRawFd, RawFd},
+    os::unix::prelude::RawFd,
 };
+#[cfg(feature = "seccomp")]
+use std::os::unix::prelude::{AsRawFd};
 
 /// Channel Design
 ///
@@ -41,6 +43,7 @@ impl MainSender {
         Ok(())
     }
 
+    #[cfg(feature = "seccomp")]
     pub fn seccomp_notify_request(&mut self, fd: RawFd) -> Result<()> {
         self.sender
             .send_fds(Message::SeccompNotify, &[fd.as_raw_fd()])?;
@@ -109,6 +112,7 @@ impl MainReceiver {
         }
     }
 
+    #[cfg(feature = "seccomp")]
     pub fn wait_for_seccomp_request(&mut self) -> Result<i32> {
         let (msg, fds) = self
             .receiver
@@ -212,6 +216,7 @@ pub struct InitSender {
 }
 
 impl InitSender {
+    #[cfg(feature = "seccomp")]
     pub fn seccomp_notify_done(&mut self) -> Result<()> {
         self.sender.send(Message::SeccompNotifyDone)?;
 
@@ -228,6 +233,7 @@ pub struct InitReceiver {
 }
 
 impl InitReceiver {
+    #[cfg(feature = "seccomp")]
     pub fn wait_for_seccomp_request_done(&mut self) -> Result<()> {
         let msg = self
             .receiver

@@ -7,7 +7,9 @@ pub enum Message {
     InitReady,
     WriteMapping,
     MappingWritten,
+    #[cfg(feature = "seccomp")]
     SeccompNotify,
+    #[cfg(feature = "seccomp")]
     SeccompNotifyDone,
     ExecFailed(String),
 }

@@ -4,8 +4,10 @@ use crate::syscall::Syscall;
 use crate::workload::ExecutorManager;
 use crate::{
     capabilities, hooks, namespaces::Namespaces, process::channel, rootfs::RootFS,
-    rootless::Rootless, seccomp, tty, utils,
+    rootless::Rootless, tty, utils,
 };
+#[cfg(feature = "seccomp")]
+use crate::seccomp;
 use anyhow::{bail, Context, Ok, Result};
 use nix::mount::MsFlags;
 use nix::sched::CloneFlags;
@@ -349,6 +351,7 @@ pub fn container_init_process(
     // Without no new privileges, seccomp is a privileged operation. We have to
     // do this before dropping capabilities. Otherwise, we should do it later,
     // as close to exec as possible.
+    #[cfg(feature = "seccomp")]
     if let Some(seccomp) = linux.seccomp() {
         if proc.no_new_privileges().is_none() {
             let notify_fd =
@@ -385,6 +388,7 @@ pub fn container_init_process(
     // Initialize seccomp profile right before we are ready to execute the
     // payload so as few syscalls will happen between here and payload exec. The
     // notify socket will still need network related syscalls.
+    #[cfg(feature = "seccomp")]
     if let Some(seccomp) = linux.seccomp() {
         if proc.no_new_privileges().is_some() {
             let notify_fd =
@@ -514,6 +518,7 @@ fn set_supplementary_gids(
     Ok(())
 }
 
+#[cfg(feature = "seccomp")]
 fn sync_seccomp(
     fd: Option<i32>,
     main_sender: &mut channel::MainSender,
@@ -673,6 +678,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(feature = "seccomp")]
     #[test]
     #[serial]
     fn test_sync_seccomp() -> Result<()> {

@@ -5,8 +5,12 @@ use crate::{
         channel, container_intermediate_process, fork,
     },
     rootless::Rootless,
-    seccomp, utils,
+    utils,
 };
+
+#[cfg(feature = "seccomp")]
+use crate::seccomp;
+
 use anyhow::{Context, Result};
 use nix::{
     sys::{
@@ -15,7 +19,9 @@ use nix::{
     },
     unistd::{self, Pid},
 };
+#[cfg(feature = "seccomp")]
 use oci_spec::runtime;
+#[cfg(feature = "seccomp")]
 use std::{io::IoSlice, path::Path};
 
 pub fn container_main_process(container_args: &ContainerArgs) -> Result<(Pid, Pid)> {
@@ -78,6 +84,7 @@ pub fn container_main_process(container_args: &ContainerArgs) -> Result<(Pid, Pi
     // process.  The intermediate process should exit after this point.
     let init_pid = main_receiver.wait_for_intermediate_ready()?;
 
+    #[cfg(feature = "seccomp")]
     if let Some(linux) = container_args.spec.linux() {
         if let Some(seccomp) = linux.seccomp() {
             let state = ContainerProcessState {
@@ -119,6 +126,7 @@ pub fn container_main_process(container_args: &ContainerArgs) -> Result<(Pid, Pi
     Ok((intermediate_pid, init_pid))
 }
 
+#[cfg(feature = "seccomp")]
 fn sync_seccomp(
     seccomp: &runtime::LinuxSeccomp,
     state: &ContainerProcessState,
@@ -146,6 +154,7 @@ fn sync_seccomp(
     Ok(())
 }
 
+#[cfg(feature = "seccomp")]
 fn sync_seccomp_send_msg(listener_path: &Path, msg: &[u8], fd: i32) -> Result<()> {
     // The seccomp listener has specific instructions on how to transmit the
     // information through seccomp listener.  Therefore, we have to use
