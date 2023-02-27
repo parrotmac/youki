@@ -1,5 +1,8 @@
+#[cfg(feature = "seccomp")]
 use crate::{
     container::ContainerProcessState,
+};
+use crate::{
     process::{
         args::{ContainerArgs, ContainerType},
         channel, container_intermediate_process, fork,
@@ -12,15 +15,23 @@ use crate::{
 use crate::seccomp;
 
 use anyhow::{Context, Result};
+
+#[cfg(feature = "seccomp")]
+use nix::sys::socket::{self, UnixAddr};
+
 use nix::{
     sys::{
-        socket::{self, UnixAddr},
         wait::{waitpid, WaitStatus},
     },
-    unistd::{self, Pid},
+    unistd::Pid,
 };
+
+#[cfg(feature = "seccomp")]
+use nix::unistd::{self};
+
 #[cfg(feature = "seccomp")]
 use oci_spec::runtime;
+
 #[cfg(feature = "seccomp")]
 use std::{io::IoSlice, path::Path};
 

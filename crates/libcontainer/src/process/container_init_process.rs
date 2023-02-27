@@ -164,6 +164,7 @@ fn reopen_dev_null() -> Result<()> {
 pub fn container_init_process(
     args: &ContainerArgs,
     main_sender: &mut channel::MainSender,
+    #[allow(unused_variables)]
     init_receiver: &mut channel::InitReceiver,
 ) -> Result<()> {
     let syscall = args.syscall;
